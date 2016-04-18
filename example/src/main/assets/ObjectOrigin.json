@@ -1,0 +1,15 @@
+{
+	"varInt": 1,
+	"varDouble": 2.2,
+	"varString": "text",
+	"varArray": ["t1","t2","t3"],
+	"varList": ["1", "2", "3"],
+	"varObject": {
+		"varInt": 2
+	},
+	"varListObjects": [
+		{
+			"varString": "textList"
+		}
+	]
+}
