@@ -10,14 +10,14 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/example" />
-            <option value="$PROJECT_DIR$/quepotranslator" />
+            <option value="$PROJECT_DIR$/quepo-translator" />
           </set>
         </option>
         <option name="myModules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/example" />
-            <option value="$PROJECT_DIR$/quepotranslator" />
+            <option value="$PROJECT_DIR$/quepo-translator" />
           </set>
         </option>
       </GradleProjectSettings>

@@ -1,1 +1,1 @@
-include ':example', ':quepotranslator'
+include ':example', ':quepo-translator'
