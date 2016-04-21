@@ -6,7 +6,6 @@ import com.silicornio.quepotranslator.general.QPL;
 
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,25 +20,16 @@ public class QPTransManager {
     /** Executor loaded **/
     private QPTransExecutor mExecutor = new QPTransExecutor();
 
-    public QPTransManager(){
-
+    public QPTransManager(QPTransConf conf){
+        mConf = conf;
     }
 
     /**
-     * Read and set the configuration to use
-     * @param isConf InputStream with data
+     * Add a custom translations to the list of custom translations of this manager
+     * @param customTranslation QPTransCustomTranslation to use for conversions
      */
-    public boolean loadConf(InputStream isConf){
-
-        try {
-            Gson gson = new Gson();
-            mConf = gson.fromJson(new InputStreamReader(isConf), QPTransConf.class);
-            return true;
-        }catch(Exception e){
-            QPL.e("Exception loading configuration, check the JSON format: " + e.toString());
-        }
-
-        return false;
+    public void addCustomTranslation(QPCustomTranslation customTranslation){
+        mExecutor.addCustomTranslation(customTranslation);
     }
 
     /**
@@ -76,6 +66,30 @@ public class QPTransManager {
         List<Object> objects = mExecutor.translate(map, objectName, mConf);
 
         return new QPTransResponse(objects);
+    }
+
+    /**
+     * Translate the map received with the object name associated
+     * A configuration had to be loaded before: QPTransManager.loadConf()
+     * @param map Map<String, Object> with values
+     * @param klass Class of the object to convert
+     * @return QPTransResponse with the translated objects
+     */
+    public <T>T translate(Map<String, Object> map, Class<T> klass){
+
+        if(mConf ==null){
+            mConf = new QPTransConf();
+            QPTransConfConfiguration configuration = new QPTransConfConfiguration();
+            configuration.objectsPackage = klass.getPackage().getName();
+            mConf.configuration = configuration;
+        }
+
+        List<Object> objects = mExecutor.translate(map, klass.getSimpleName(), mConf);
+        if(objects!=null && objects.size()>0){
+            return (T)objects.get(0);
+        }else{
+            return null;
+        }
     }
 
 }

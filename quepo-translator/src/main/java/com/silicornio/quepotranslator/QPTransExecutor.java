@@ -16,8 +16,19 @@ public class QPTransExecutor {
     /** Configuration used for the execution **/
     private QPTransConf mConf;
 
+    /** List of custom translations added **/
+    private List<QPCustomTranslation> mCustomTranslations = new ArrayList<>();
+
     protected QPTransExecutor(){
 
+    }
+
+    /**
+     * Add a custom translations to the list of custom translations of this manager
+     * @param customTranslation QPTransCustomTranslation to use for conversions
+     */
+    protected void addCustomTranslation(QPCustomTranslation customTranslation){
+        mCustomTranslations.add(customTranslation);
     }
 
     /**
@@ -33,7 +44,10 @@ public class QPTransExecutor {
         mConf = conf;
 
         //convert the objectName to a object
-        QPTransObject transObject = conf.getObject(objectName);
+        QPTransObject transObject = null;
+        if(conf!=null){
+            transObject = conf.getObject(objectName);
+        }
         if(transObject==null || (transObject.values==null && transObject.reference==null)){
 
             //generate one with the map received
@@ -82,36 +96,36 @@ public class QPTransExecutor {
 
             //get the value in the map
             Object mapValue = getMapValue(transValue.name.split("\\."), 0, map);
-            if(mapValue==null){
-                QPL.i("Value with name '" + transValue.name + "' in the object '" + transObject.name + "' was not found in the map received");
-                break;
-            }
+            if(mapValue!=null) {
 
-            //Get the object reference if it has one
-            QPTransObject transObjectRef = null;
-            if(transValue.reference!=null){
-                transObjectRef = mConf.getObject(transValue.reference);
-            }
+                //Get the object reference if it has one
+                QPTransObject transObjectRef = null;
+                if (transValue.reference != null) {
+                    transObjectRef = mConf.getObject(transValue.reference);
+                }
 
-            //prepare package
-            String valuePackage;
-            String transValueDestiny = transValue.destiny;
-            String[] aValuePackage = transValueDestiny.split(":");
-            if(aValuePackage.length>1){
-                valuePackage = aValuePackage[0];
-                transValueDestiny = aValuePackage[1];
-            }else if(transObject.valuesPackage!=null){
-                valuePackage = transObject.valuesPackage;
+                //prepare package
+                String valuePackage;
+                String transValueDestiny = transValue.destiny;
+                String[] aValuePackage = transValueDestiny.split(":");
+                if (aValuePackage.length > 1) {
+                    valuePackage = aValuePackage[0];
+                    transValueDestiny = aValuePackage[1];
+                } else if (transObject.valuesPackage != null) {
+                    valuePackage = transObject.valuesPackage;
+                } else {
+                    valuePackage = mConf.configuration.objectsPackage;
+                }
+
+                //prepare values to read with the package
+                String[] aDestiny = transValueDestiny.split("\\.");
+                aDestiny[0] = (valuePackage != null ? valuePackage + "." : "") + aDestiny[0];
+
+                //get the object where to translate the value
+                setMapObjectDestiny(aDestiny, 0, mapValue, instanceMap, transObjectRef);
             }else{
-                valuePackage = mConf.configuration.objectsPackage;
+                QPL.i("Value with name '" + transValue.name + "' in the object '" + transObject.name + "' was not found in the map received");
             }
-
-            //prepare values to read with the package
-            String[] aDestiny = transValueDestiny.split("\\.");
-            aDestiny[0] = (valuePackage!=null? valuePackage + "." : "") + aDestiny[0];
-
-            //get the object where to translate the value
-            setMapObjectDestiny(aDestiny, 0, mapValue, instanceMap, transObjectRef);
         }
 
         //return the list of generated objects
@@ -198,7 +212,7 @@ public class QPTransExecutor {
      * @param instancesMap Map<String, Object> instances of all virtual translated objects
      * @return List<Object> list of instances of objects
      */
-    private static List<Object> generateObjects(Map<String, Object> instancesMap){
+    private List<Object> generateObjects(Map<String, Object> instancesMap){
 
         //generate the list of objects
         List<Object> listObjects = new ArrayList<>();
@@ -226,7 +240,7 @@ public class QPTransExecutor {
      * @param mapObject Map<String, Object> that defines what values to set
      * @param instanceObject Object generated where to set values
      */
-    private static void generateSubObjects(Map<String, Object> mapObject, Object instanceObject){
+    private void generateSubObjects(Map<String, Object> mapObject, Object instanceObject){
 
         for(Map.Entry<String, Object> entry : mapObject.entrySet()){
 
@@ -238,7 +252,7 @@ public class QPTransExecutor {
                 if (object == null) {
                     object = QPReflectionUtils.generateInstance(QPReflectionUtils.getClassValue(instanceObject, entry.getKey()));
                     if (object != null) {
-                        QPReflectionUtils.setValue(instanceObject, entry.getKey(), object);
+                        QPReflectionUtils.setValue(instanceObject, entry.getKey(), object, mCustomTranslations);
                     }
                 }
                 if (object != null) {
@@ -262,12 +276,12 @@ public class QPTransExecutor {
                 }
 
                 //set the value into the instanceObject
-                QPReflectionUtils.setValue(instanceObject, entry.getKey(), list);
+                QPReflectionUtils.setValue(instanceObject, entry.getKey(), list, mCustomTranslations);
 
             }else{
 
                 //set the value into the instanceObject
-                QPReflectionUtils.setValue(instanceObject, entry.getKey(), entry.getValue());
+                QPReflectionUtils.setValue(instanceObject, entry.getKey(), entry.getValue(), mCustomTranslations);
             }
 
         }

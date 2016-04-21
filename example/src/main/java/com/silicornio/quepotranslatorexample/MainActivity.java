@@ -3,12 +3,17 @@ package com.silicornio.quepotranslatorexample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.silicornio.quepotranslator.QPCustomTranslation;
+import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
 import com.silicornio.quepotranslator.QPTransResponse;
 import com.silicornio.quepotranslator.general.QPL;
-import com.silicornio.quepotranslatorexample.general.L;
+import com.silicornio.quepotranslator.general.QPUtils;
 
-import java.io.IOException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -21,26 +26,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void init(){
 
-        L.showLogs = true;
         QPL.showLogs = true;
 
-        QPTransManager manager = new QPTransManager();
-        try {
-            manager.loadConf(getResources().getAssets().open("translation3.conf"));
-        }catch(IOException ioe){
-            L.e("Error loading configuration: " + ioe.toString());
-        }
+        QPTransManager manager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation3.conf", QPTransConf.class));
 
-        try {
-            QPTransResponse response = manager.translateJSON(getResources().getAssets().open("ObjectOrigin.json"), "ObjectOrigin");
-            if(response.getNumObjects()==1) {
-                L.d("Response: " + response.getObject().toString());
-            }else{
-                L.d("Response: NONE");
+        //-----
+
+        manager.addCustomTranslation(new QPCustomTranslation<Calendar, Date>() {
+            @Override
+            public Date onTranslation(Calendar calendar) {
+                return calendar.getTime();
             }
-        }catch(IOException ioe){
-            L.e("Error loading configuration: " + ioe.toString());
-        }
+
+            @Override
+            public Calendar onTranslationInverse(Date date) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(date);
+                return calendar;
+            }
+        });
+
+        Map<String, Object> mapOrigin = new HashMap<>();
+        mapOrigin.put("varCalendar", Calendar.getInstance());
+
+        QPTransResponse response = manager.translate(mapOrigin, "ObjectOrigin");
+        QPL.d("Response: " + response.toString());
+
 
     }
 }

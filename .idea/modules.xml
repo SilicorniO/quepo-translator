@@ -3,9 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/QuepoTranslator.iml" filepath="$PROJECT_DIR$/QuepoTranslator.iml" />
-      <module fileurl="file://$PROJECT_DIR$/example/app.iml" filepath="$PROJECT_DIR$/example/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/example/example.iml" filepath="$PROJECT_DIR$/example/example.iml" />
-      <module fileurl="file://$PROJECT_DIR$/quepo-translator/quepotranslator.iml" filepath="$PROJECT_DIR$/quepo-translator/quepotranslator.iml" />
+      <module fileurl="file://$PROJECT_DIR$/quepo-translator/quepo-translator.iml" filepath="$PROJECT_DIR$/quepo-translator/quepo-translator.iml" />
     </modules>
   </component>
 </project>
