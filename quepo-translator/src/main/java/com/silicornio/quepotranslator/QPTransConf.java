@@ -1,5 +1,8 @@
 package com.silicornio.quepotranslator;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Created by SilicorniO
  */
@@ -13,7 +16,7 @@ public class QPTransConf {
     protected QPTransConfConfiguration configuration;
 
     /** Objects **/
-    protected QPTransObject[] objects;
+    protected List<QPTransObject> objects = new ArrayList<>();
 
     //----- ADDITIONAL METHODS -----
 

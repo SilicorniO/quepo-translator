@@ -72,7 +72,7 @@ public class QPReflectionUtils {
 
         try {
             Field field = object.getClass().getDeclaredField(varName);
-            return field.getDeclaringClass().getName();
+            return field.getType().getName();
         } catch (Exception e) {
             QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
         }

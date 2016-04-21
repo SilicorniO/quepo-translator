@@ -47,11 +47,17 @@ public class QPTransExecutor {
         QPTransObject transObject = null;
         if(conf!=null){
             transObject = conf.getObject(objectName);
+        }else{
+            mConf = new QPTransConf();
+            mConf.configuration = new QPTransConfConfiguration();
         }
         if(transObject==null || (transObject.values==null && transObject.reference==null)){
 
+            //generate the list of objects necessaries to translate the map to the configuration
+            QPTransUtils.generateObjects(objectName, map, conf.objects);
+
             //generate one with the map received
-            transObject = new QPTransObject(objectName, map);
+            transObject = conf.getObject(objectName);
 
         }else if(transObject.values==null && transObject.reference!=null){
 

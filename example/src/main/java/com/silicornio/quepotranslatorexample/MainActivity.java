@@ -3,15 +3,12 @@ package com.silicornio.quepotranslatorexample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.silicornio.quepotranslator.QPCustomTranslation;
 import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
-import com.silicornio.quepotranslator.QPTransResponse;
 import com.silicornio.quepotranslator.general.QPL;
 import com.silicornio.quepotranslator.general.QPUtils;
+import com.silicornio.quepotranslatorexample.objects.ObjectParent;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,25 +29,15 @@ public class MainActivity extends AppCompatActivity {
 
         //-----
 
-        manager.addCustomTranslation(new QPCustomTranslation<Calendar, Date>() {
-            @Override
-            public Date onTranslation(Calendar calendar) {
-                return calendar.getTime();
-            }
+        Map<String, Object> mapDestiny = new HashMap<>();
+        mapDestiny.put("varString", "stringOrigin");
 
-            @Override
-            public Calendar onTranslationInverse(Date date) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTime(date);
-                return calendar;
-            }
-        });
+        Map<String, Object> mapParent = new HashMap<>();
+        mapParent.put("varString", "stringParent");
+        mapParent.put("varDestiny", mapDestiny);
 
-        Map<String, Object> mapOrigin = new HashMap<>();
-        mapOrigin.put("varCalendar", Calendar.getInstance());
-
-        QPTransResponse response = manager.translate(mapOrigin, "ObjectOrigin");
-        QPL.d("Response: " + response.toString());
+        ObjectParent objParent = manager.translate(mapParent, ObjectParent.class);
+        QPL.d("ObjParent: " + objParent.toString());
 
 
     }
