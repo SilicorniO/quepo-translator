@@ -2,8 +2,9 @@
 Objects translator for Android. This library allows to convert objects from one type to another defining the conversion with a JSON file.
 
 ## Features
- * Convert JSON objet into real Objects
+ * Convert JSON objet into real Objects and real objects to JSON
  * Convert Map into real Objects
+ * Convert Objects into Map
 
 ##Installation
 
@@ -19,7 +20,7 @@ In your `build.gradle` you should declare the jCenter repository into `repositor
 ```
 Include the library as dependency:
 ```gradle
-compile 'com.silicornio:quepo-translator:1.0.1'
+compile 'com.silicornio:quepo-translator:1.1.0'
 ```
 
 ### For Maven users
@@ -27,7 +28,7 @@ compile 'com.silicornio:quepo-translator:1.0.1'
 <dependency>
   <groupId>com.silicornio</groupId>
   <artifactId>quepo-translator</artifactId>
-  <version>1.0.1</version>
+  <version>1.1.0</version>
   <type>pom</type>
 </dependency>
 ```
@@ -48,7 +49,8 @@ compile 'com.silicornio:quepo-translator:1.0.1'
     				{
     					"name": "varListObjects",
     					"destiny": "ObjectDestiny.varListObjects",
-    					"reference" : "ObjectList"
+    					"reference" : "ObjectList",
+    					"referenceObject": "ObjectOrigin"
     				},
     				{
     				    "name": "varCalendar",
@@ -78,29 +80,47 @@ compile 'com.silicornio:quepo-translator:1.0.1'
   * object.name - Name of the object. This is the name we use when we want to convert a map or another object. We have to indicate the object to use for the conversion.
   * object.valuesPackage - Package to use as default for the destinies of the object
   * values.name - Name of the variable of the origin object.
-  * values.destiny - [PACKAGE]:[OBJECT].[VARIABLE] where we will save the value (destiny variable of the destiny object)
+  * values.destiny - [PACKAGE]:[OBJECT].[VARIABLE] where we will save the value (destiny variable of the destiny object). If we don't want to store it in any object we can create a virtual object writting ":"[OBJECT], as if the object would have an empty package.
   * values.reference - Used to link another Object when we have a list of Objects and we want to specify the type of Object to convert. For generic types is not needed.
+  * values.referenceObject - This is the translated object we want to assign to this variable or add to this list or array. It is necessary when the reference object generates more than one object. If this is not setted the first object created will be returned.
 
 2. Create a QPTransManager instance:
 
   We use the configuration file when we create an instance of the manager.
   
-      ```java
+   ```java
       QPTransManager manager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation.conf", QPTransConf.class));
-      ```
-  
+   ```
 
-3. Translate an map or a JSON:
+3. Translate JSON to a map:
 
-  The JSON is translated to a Map usin GSON. Then the map is translated. The translation creates another map or list of maps using the configuration file. Then, the map is converted to real objects. The response is an object containing the objects translated.
+   Most of the cases we need to translate a JSON to different objects. Quepo-translator only works with Map, so we need to convert the JSON to a Map before starting translation.
+   
+   ```java
+      Map<String, Object> mapOrigin = QPTransUtils.convertJSONToMap(jsonText);
+   ```
+   
+4. Translate a map into objects:
+
+  The translation creates another map or list of maps using the configuration file. Then, the map is converted to real objects. The response is an object containing the objects translated.
   
-      ```java
+   ```java
       QPTransResponse response = manager.translate(mapOrigin, "ObjectOrigin");
-      ```
-  
-    ```java
-      QPTransResponse response = manager.translateJSON(jsonInputStream, "ObjectOrigin");
-    ```
+   ```
+
+5. Read objects:
+
+   The translation is received in an object of type QPTransResponse that contains all the objects generated. The most important variable is the map of objects because it contains all the objects generated starting with the complete name of the class or the name of the virtual object.
+   
+   To do easier to get the translated objects, the response has a method called "getObject" that returns the object translated giving its Class or its virtual name.
+   
+   ```java
+      ObjectOrigin objectOrigin = response.getObject(ObjectOrigin.class);
+   ```
+   
+   ```java
+      ObjectOrigin objectOrigin = response.getObject("objectOriginVirtual");
+   ```
 
 ## Additional
 
@@ -110,7 +130,7 @@ compile 'com.silicornio:quepo-translator:1.0.1'
 
   This is an example for Calendar and Date conversion:
 
-    ```java
+   ```java
       manager.addCustomTranslation(new QPCustomTranslation<Calendar, Date>() {
               @Override
               public Date onTranslation(Calendar calendar) {
@@ -124,7 +144,47 @@ compile 'com.silicornio:quepo-translator:1.0.1'
                   return calendar;
               }
           });
-      ```
+   ```
+2. Code translations
+   
+   Quepo-Translator can convert a type of a map into another type before to be processed. For example, Gson creates all numbers as double. If we are converting a numeric value to a string variable and we don't want to show decimals we can check it and convert it to integer before translation.
+
+   We need to create a class that extends of QPCodeTranslations and it works similar to the CustomTranslations. We need to add the instance to the list of code translations of the manager. 
+
+   ```java
+      private static class Double0QPCodeTranslation extends QPCodeTranslation<Double> {
+
+        public Double0QPCodeTranslation(){
+        }
+
+        @Override
+        public boolean match(Double d) {
+            return d%1 == 0;
+        }
+
+        @Override
+        public Object translate(Double d) {
+            return Integer.valueOf(d.intValue());
+        }
+      }
+   ```
+
+3. Arrays
+
+   When an array is received directly we have to store it in a virtual object. We can create one writting a destiny value with empty package but including ":".
+   
+   ```json
+      {
+         "name": "ArrayObjectOrigin",
+         "values": [
+             {
+                 "name": "array",
+                 "destiny": ":virtualArray",
+                 "reference": "ObjectOrigin"
+             }
+         ]
+     }
+   ```
 
 ## Logs
 
