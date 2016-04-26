@@ -7,8 +7,8 @@ import java.lang.reflect.ParameterizedType;
  */
 public abstract class QPCustomTranslation<T, U> {
 
-    abstract public U onTranslation(T t);
-    abstract public T onTranslationInverse(U u);
+    public abstract U onTranslation(T t);
+    public abstract T onTranslationInverse(U u);
 
     /**
      * Check if the classes received are the same

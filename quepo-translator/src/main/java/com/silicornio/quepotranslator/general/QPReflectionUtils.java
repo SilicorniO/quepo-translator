@@ -6,6 +6,8 @@ import com.silicornio.quepotranslator.QPCustomTranslation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.List;
 
 public class QPReflectionUtils {
@@ -16,6 +18,8 @@ public class QPReflectionUtils {
     private static final String DOUBLE_NAME = "double";
     private static final String BOOLEAN_NAME = "boolean";
     private static final String STRING_NAME = "string";
+
+    //----- INSTANCES -----
 
     /**
      * Generate the instance of an object with the name received
@@ -44,6 +48,70 @@ public class QPReflectionUtils {
         return null;
     }
 
+    //----- GENERAL -----
+
+    /**
+     * Get the field checking super objects
+     * @param object Object where to search the variable
+     * @param varName String name of variable
+     * @return Field of the object or null if not found
+     */
+    private static Field getField(Object object, String varName){
+        Field field = null;
+        Class objectClass = object.getClass();
+        do {
+            try {
+                field = objectClass.getDeclaredField(varName);
+            }catch (NoSuchFieldException nsfe){
+                objectClass = objectClass.getSuperclass();
+            }
+        }while(field==null && objectClass!=null);
+        return field;
+    }
+
+    /**
+     * Get a list of the name of variables of the class received
+     * @param klass Class to get the variable names
+     * @return List<String>[] of length 3 with variable names: [0]: primitives, [1]: arrays, [2]: objects
+     */
+    public static List<String>[] getVariableNames(Class klass){
+
+        //array to return
+        List<String>[] varNames = new List[3];
+        for(int i=0; i<3; i++){
+            varNames[i] = new ArrayList<>();
+        }
+
+        //add all valid fields
+        do {
+            Field[] fields = klass.getDeclaredFields();
+            for (Field field : fields) {
+                if (!Modifier.isTransient(field.getModifiers())) {
+
+                    //get the type
+                    Class type = field.getType();
+
+                    if (type.isPrimitive() || (type == String.class)) {
+                        varNames[0].add(field.getName());
+                    } else if (type.isArray()) {
+                        varNames[1].add(field.getName());
+                    } else {
+                        varNames[2].add(field.getName());
+                    }
+                }
+            }
+
+            klass = klass.getSuperclass();
+        }while(klass!=null);
+
+
+        //return array
+        return varNames;
+
+    }
+
+    //----- GET VALUES -----
+
     /**
      * Return the value of a variable in an object
      * @param object Object to read
@@ -53,7 +121,8 @@ public class QPReflectionUtils {
     public static Object getValue(Object object, String varName){
 
         try {
-            Field field = object.getClass().getDeclaredField(varName);
+            //get the field checking superclass objects
+            Field field = getField(object, varName);
             field.setAccessible(true);
             return field.get(object);
         } catch (Exception e) {
@@ -71,7 +140,8 @@ public class QPReflectionUtils {
     public static String getClassValue(Object object, String varName){
 
         try {
-            Field field = object.getClass().getDeclaredField(varName);
+            //get the field checking superclass objects
+            Field field = getField(object, varName);
             return field.getType().getName();
         } catch (Exception e) {
             QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
@@ -79,69 +149,106 @@ public class QPReflectionUtils {
         return null;
     }
 
+    //----- SET VALUES -----
+
     /**
      * Set the value received into the variable of the object given
      * @param object Object to read
      * @param varName String name of the variable
      * @param value Object to set into the variable
      * @param customTranslations List<QPCustomTranslation> list of translations to try another conversion if there is an error
+     * @param checkTranslationsFirst boolean TRUE for check the translations before general types
      * @return Object or null if not found
      */
-    public static void setValue(Object object, String varName, Object value, List<QPCustomTranslation> customTranslations){
+    public static void setValue(Object object, String varName, Object value, QPCustomTranslation[] customTranslations, boolean checkTranslationsFirst){
 
         Field field = null;
-        Class fieldClass = null;
+        Class fieldType = null;
 
         try {
-            field = object.getClass().getDeclaredField(varName);
+            //get the field checking superclass objects
+            field = getField(object, varName);
+
+            if(field==null){
+                QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model");
+                return;
+            }
+
             field.setAccessible(true);
+            fieldType = field.getType();
 
-            fieldClass = field.getType();
-            if (fieldClass == Integer.TYPE) {
+            //try to set the value with custom translations
+            if(checkTranslationsFirst) {
+                if(setWithCustomTranslations(object, value, field, fieldType, customTranslations)){
+                    return;
+                }
+            }
+
+            if (fieldType == Integer.TYPE) {
                 field.set(object, getInteger(value));
-            } else if (fieldClass == Float.TYPE) {
+            } else if (fieldType == Float.TYPE) {
                 field.set(object, getFloat(value));
-            } else if (fieldClass == Double.TYPE) {
+            } else if (fieldType == Double.TYPE) {
                 field.set(object, getDouble(value));
-            } else if (fieldClass == String.class) {
+            } else if (fieldType == String.class) {
                 field.set(object, value.toString());
-            } else if (fieldClass.isArray() && (value instanceof List)) {
+            } else if (fieldType.isArray() && (value instanceof List)) {
 
-                if (fieldClass.getComponentType() == Integer.TYPE) {
+                if (fieldType.getComponentType() == Integer.TYPE) {
                     field.set(object, getIntegerArray((List) value));
-                } else if (fieldClass.getComponentType() == Float.TYPE) {
+                } else if (fieldType.getComponentType() == Float.TYPE) {
                     field.set(object, getFloatArray((List) value));
-                } else if (fieldClass.getComponentType() == Double.TYPE) {
+                } else if (fieldType.getComponentType() == Double.TYPE) {
                     field.set(object, getDoubleArray((List) value));
                 } else {
-                    field.set(object, getObjectArray((List) value, fieldClass.getComponentType()));
+                    field.set(object, getObjectArray((List) value, fieldType.getComponentType()));
                 }
 
             } else {
                 field.set(object, value);
             }
 
-        }catch (IllegalArgumentException iae){
+        }catch (IllegalArgumentException iae) {
 
-            try {
-
-                //try to get a custom translation for this objects
-                for (QPCustomTranslation customTranslation : customTranslations) {
-                    int result = customTranslation.sameTypes(value.getClass(), fieldClass);
-                    if (result == 1) {
-                        field.set(object, customTranslation.onTranslation(value));
-                    } else if (result == -1) {
-                        field.set(object, customTranslation.onTranslationInverse(value));
-                    }
-
-                }
-            }catch(Exception e){
-                QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
+            //try to set the value with custom translations
+            if (!checkTranslationsFirst) {
+                setWithCustomTranslations(object, value, field, fieldType, customTranslations);
             }
 
         } catch (Exception e) {
-            QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
+            QPL.e("Exception setting value '" + varName + "' of object '" + object.getClass().getSimpleName() + ": " + e.toString());
         }
+    }
+
+    /**
+     * Set the value with the custom translations if it is possible
+     * @param object Object where to set the value
+     * @param value Object value to set
+     * @param field Field read of the object where to set the value
+     * @param fieldClass Class of the field
+     * @param customTranslations QPCustomTranslation[] array of translations to checl
+     * @return boolean TRUE if translation was done FALSE if not
+     */
+    private static boolean setWithCustomTranslations(Object object, Object value, Field field, Class fieldClass, QPCustomTranslation[] customTranslations){
+        try {
+
+            //try to get a custom translation for this objects
+            for (QPCustomTranslation customTranslation : customTranslations) {
+                int result = customTranslation.sameTypes(value.getClass(), fieldClass);
+                if (result == 1) {
+                    field.set(object, customTranslation.onTranslation(value));
+                    return true;
+                } else if (result == -1) {
+                    field.set(object, customTranslation.onTranslationInverse(value));
+                    return true;
+                }
+
+            }
+        }catch(Exception e){
+            QPL.e("Exception trying to set an object of a custom translation, are you returning right object?: " + e.toString());
+        }
+
+        return false;
     }
 
 

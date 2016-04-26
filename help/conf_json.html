@@ -1,0 +1,86 @@
+<html>
+<head></head>
+<body>
+
+<div style="float:left;width:45%">
+	<textarea id="inputSource" type="text" style="width:100%;height:100%" ></textarea>
+</div>
+<div style="float:left;width:10%;text-align:center" ><BR />
+	<BR /><input id="objectName" type="text" style="width:90%" value="" placeholder="Object name"><BR />
+	<BR /><a href="javascript:createConfFromJson()">conf</a><BR />
+	<BR /><input id="objectDestiny" type="text" style="width:90%" value="" placeholder="Object destiny"><BR />
+</div>
+<div style="float:left;width:44%">
+</div>
+	<textarea id="inputResult" type="text" style="width:45%;height:100%" ></textarea>
+<script>
+
+function createConfFromJson(){
+	
+	//read json source
+	var objectName = document.getElementById("objectName").value;
+	var jsonData = document.getElementById("inputSource").value;
+	var objectDestiny = document.getElementById("objectDestiny").value;
+	
+	//check there is an object name and data with json
+	if(objectName.length==0){
+		alert("Write a name for the main object");
+		return;
+	}
+	if(jsonData.length==0){
+		alert("Write data to convert to translator configuration");
+		return;
+	}
+	if(objectDestiny.length==0){
+		alert("Write a name for the destiny object");
+		return;
+	}
+	
+	//convert to array
+	var jsonObj = JSON.parse(jsonData);
+	
+	//prepare configuration
+	var arrayObjectConf = [];
+	confObject(objectName, objectDestiny, jsonObj, arrayObjectConf);
+		
+	//set text into result box
+	document.getElementById("inputResult").value = JSON.stringify(arrayObjectConf, null, "\t");
+	
+}
+
+function confObject(objectName, objectDestiny, jsonObj, arrayObjectConf){
+	
+	//prepare configuration
+	var objectConf = {};
+	objectConf["name"] = objectName;
+	
+	var values = new Array();
+	for(var key in jsonObj){
+		var value = jsonObj[key];
+		var objValue = {};
+		objValue["name"] = key;
+		objValue["destiny"] = objectDestiny + "." + key;
+		if(value!=null && (value.constructor == Array)){
+			if(value.length>0 && (typeof value[0] ==='object')){
+				var objectKey = objectDestiny + "_" + key;
+				confObject(objectKey, objectKey, value[0], arrayObjectConf);		
+			}
+			objValue["reference"] = objectKey;
+		}else if(value!=null && (typeof value === 'object')){
+			var objectKey = objectDestiny + "_" + key 
+			confObject(objectKey, objectKey, value, arrayObjectConf);		
+			objValue["reference"] = objectKey;
+		}
+		values[values.length] = objValue;
+    }
+	objectConf["values"] = values;	
+	
+	//add the conf object to the array
+	arrayObjectConf[arrayObjectConf.length] = objectConf;
+}
+
+</script>
+
+
+</body>
+</html>

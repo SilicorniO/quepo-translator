@@ -5,6 +5,11 @@ package com.silicornio.quepotranslator;
  */
 public class QPTransObjectValue {
 
+    public static final String INVERSE_FORMAT_INTEGER = "integer";
+    public static final String INVERSE_FORMAT_DOUBLE = "double";
+    public static final String INVERSE_FORMAT_STRING = "string";
+    public static final String INVERSE_FORMAT_BOOLEAN = "boolean";
+
     /** Name of the variable **/
     protected String name;
 
@@ -13,6 +18,12 @@ public class QPTransObjectValue {
 
     /** Reference of another object **/
     protected String reference;
+
+    /** Object to get in the reference **/
+    protected String referenceObject;
+
+    /** Format to apply for inversion **/
+    protected String inverseFormat;
 
     protected QPTransObjectValue(){
 

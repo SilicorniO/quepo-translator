@@ -20,6 +20,8 @@ public class ObjectOrigin {
 
     private int[] varArray;
 
+    private ObjectOrigin[] varObjectArray;
+
     private List<String> varList;
 
     private List<ObjectOrigin> varListObjects;
@@ -68,6 +70,14 @@ public class ObjectOrigin {
 
     public void setVarArray(int[] varArray) {
         this.varArray = varArray;
+    }
+
+    public ObjectOrigin[] getVarObjectArray() {
+        return varObjectArray;
+    }
+
+    public void setVarObjectArray(ObjectOrigin[] varObjectArray) {
+        this.varObjectArray = varObjectArray;
     }
 
     public List<String> getVarList() {

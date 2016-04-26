@@ -19,6 +19,8 @@ public class QPTransObject {
     /** Package to use with destiny objects for this element **/
     protected String valuesPackage;
 
+    protected String referenceObject;
+
     protected QPTransObject(){
 
     }
