@@ -199,6 +199,57 @@ public class QPTransUtils {
 
     }
 
+    /**
+     * Create new objects that were used to translate the map received and include them into the objects list
+     * @param objectName String to set
+     * @param klass Class of the object to generate
+     * @param map Map<String, Object> with data to copy
+     * @param objects List<QPTransObject> list where to save the new objects generated
+     */
+    protected static void generateObjects(String objectName, Class klass, Map<String, Object> map, List<QPTransObject> objects){
+
+        //generate a new object
+        QPTransObject object = new QPTransObject();
+        object.name = objectName;
+
+        //check if the new object to create exists in the list, then stop
+        if(objects.contains(object)){
+            return;
+        }
+
+        //convert klass to name with package
+        String className = klass.getName();
+        int lastPoint = className.lastIndexOf(".");
+        if(lastPoint!=-1){
+            className = className.substring(0, lastPoint) + ":" + className.substring(lastPoint+1);
+        }
+
+        //add all the values received in the map
+        object.values = new QPTransObjectValue[map.size()];
+        int count = 0;
+        for(Map.Entry<String, Object> entry : map.entrySet()){
+            object.values[count] = new QPTransObjectValue(entry.getKey(), className + "." + entry.getKey());
+
+            //check if the value is another map, to create another object
+            if(entry.getValue() instanceof Map){
+
+                //get the Class of the object
+                Class refKlass = QPReflectionUtils.getClass(klass, entry.getKey());
+                if(refKlass!=null){
+                    String refName = objectName + "_" + entry.getKey();
+                    generateObjects(refName, refKlass, (Map<String, Object>)entry.getValue(), objects);
+                    object.values[count].reference = refName;
+                }
+            }
+
+            count++;
+        }
+
+        //add the object to the list
+        objects.add(object);
+
+    }
+
     //----- JSON -----
 
     /**

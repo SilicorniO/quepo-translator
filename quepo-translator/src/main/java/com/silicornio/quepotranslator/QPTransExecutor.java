@@ -95,7 +95,7 @@ public class QPTransExecutor {
 
         if(transObject==null || (transObject.values==null && transObject.reference==null)){
 
-            //generate the list of objects necessaries to translate the map to the configuration
+            //generate the list of objects necessary to translate the map to the configuration
             QPTransUtils.generateObjects(objectName, map, conf.objects);
 
             //generate one with the map received
@@ -558,7 +558,12 @@ public class QPTransExecutor {
                     }
                 }
                 if (object != null) {
-                    generateSubObjects((Map<String, Object>) entry.getValue(), object);
+                    Object mapValue = ((Map)entry.getValue()).get(object.getClass().getName());
+                    if(mapValue!=null && (mapValue instanceof Map)){
+                        generateSubObjects((Map<String, Object>) mapValue, object);
+                    }else{
+                        QPL.i("Object of type '" + object.getClass().getName() + "' trying to be filled with another type, check configuration");
+                    }
                 }
 
             }else if(entry.getValue() instanceof List){

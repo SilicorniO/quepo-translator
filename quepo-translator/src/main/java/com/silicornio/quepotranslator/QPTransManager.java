@@ -143,6 +143,9 @@ public class QPTransManager {
             QPTransConfConfiguration configuration = new QPTransConfConfiguration();
             configuration.objectsPackage = klass.getPackage().getName();
             mConf.configuration = configuration;
+
+            //generate the list of objects necessary to translate the map to the configuration
+            QPTransUtils.generateObjects(klass.getSimpleName(), klass, map, mConf.objects);
         }
 
         //do code translations before translate the map with configuration
@@ -184,6 +187,11 @@ public class QPTransManager {
      * @param map Map<String, Object> where to search values
      */
     private void doCodeTranslations(Map<String, Object> map, List<QPCodeTranslation> codeTranslations){
+
+        //check there are code translations to execute
+        if(codeTranslations.size()==0){
+            return;
+        }
 
         //get the list of code translators in an array to improve speed
         QPCodeTranslation[] codeTrans = codeTranslations.toArray(new QPCodeTranslation[codeTranslations.size()]);

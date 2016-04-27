@@ -276,5 +276,23 @@ public class QuepoTranslatorTests {
         assertEquals(mapInverse.get("varInt"), "5");
     }
 
+    @Test
+    public void test014MapToObjectClass(){
+
+        QPTransManager manager = new QPTransManager(null);
+
+        Map<String, Object> mapOrigin = new HashMap<>();
+        mapOrigin.put("varInt", 3);
+        Map<String, Object> map = new HashMap<>();
+        map.put("varObject", mapOrigin);
+
+        ObjectOrigin oo = manager.translate(map, ObjectOrigin.class);
+
+        //compare object received with its identifier (title)
+        assertEquals(oo.getVarObject().getVarInt(), 3);
+    }
+
+
+
     //----- END TESTS ----
 }

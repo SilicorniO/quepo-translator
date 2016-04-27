@@ -4,11 +4,9 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.silicornio.quepotranslator.QPCodeTranslation;
-import com.silicornio.quepotranslator.QPTransConf;
+import com.silicornio.quepotranslator.QPCustomTranslation;
 import com.silicornio.quepotranslator.QPTransManager;
-import com.silicornio.quepotranslator.QPTransUtils;
 import com.silicornio.quepotranslator.general.QPL;
-import com.silicornio.quepotranslator.general.QPUtils;
 import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
 
 import java.io.IOException;
@@ -33,7 +31,9 @@ public class MainActivity extends AppCompatActivity {
 
         QPL.showLogs = true;
 
-        QPTransManager manager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation6.conf", QPTransConf.class));
+//        QPTransManager manager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation5.conf", QPTransConf.class));
+        QPTransManager manager = new QPTransManager(null);
+//        manager.addCustomTranslation(mCustomTranslationDate);
         InputStream isJson = null;
         try {
             isJson = getResources().getAssets().open("ObjectOrigin.json");
@@ -43,45 +43,15 @@ public class MainActivity extends AppCompatActivity {
 
         //-----
 
-//        QPTransResponse response = manager.translateJSON(isJson, "VirtualObject");
-//        ObjectOrigin oo = (ObjectOrigin) response.getObject("exampleVirtual");
-//        QPL.d("Origin: " + oo);
+        Map<String, Object> mapOrigin = new HashMap<>();
+        mapOrigin.put("varInt", 3);
+        Map<String, Object> map = new HashMap<>();
+        map.put("varObject", mapOrigin);
 
-        ObjectOrigin oo1 = new ObjectOrigin();
-        oo1.setVarString("oo1");
+        ObjectOrigin oo = manager.translate(map, ObjectOrigin.class);
 
-//        ObjectOrigin oo2 = new ObjectOrigin();
-//        oo2.setVarString("oo2");
-
-        ObjectOrigin oo = new ObjectOrigin();
-        oo.setVarObject(oo1);
-//        oo.setVarInt(1);
-//        oo.setVarFloat(2);
-//        oo.setVarDouble(3);
-//        oo.setVarString("text4");
-//        oo.setVarCalendar(Calendar.getInstance());
-//        oo.setVarArray(new int[]{1,2,3});
-//        oo.setVarDate(new Date(0));
-//        oo.setVarList(Arrays.asList(new String[]{"t1", "t2", "t3"}));
-//
-//        List list = new ArrayList();
-//        list.add(oo1);
-//        list.add(oo2);
-//        oo.setVarListObjects(list);
-//
-//        ObjectOrigin[] aObj = new ObjectOrigin[2];
-//        aObj[0] = oo1;
-//        aObj[1] = oo2;
-//        oo.setVarObjectArray(aObj);
-//
-//        manager.addCodeInverseTranslation(new DateQPCodeInverseTranslation());
-//        manager.addCodeInverseTranslation(new CalendarQPCodeInverseTranslation());
-//        Map<String, Object> mapObjects = QPTransUtils.convertObjectToMapInversion(oo, new Class[]{Calendar.class, Date.class});
-        Map<String, Object> mapVirtual = new HashMap<>();
-        mapVirtual.put("exampleVirtual", QPTransUtils.convertObjectToMap(oo, new Class[]{Calendar.class, Date.class}));
-        Map<String, Object> mapInverse = manager.translateInverse(mapVirtual, "VirtualObject");
-        QPL.d("INVERSE: " + QPTransUtils.convertMapToJSON(mapInverse));
-//        QPL.d("INVERSE: " + mapInverse);
+        //compare object received with its identifier (title)
+        QPL.d("Value: " + oo.getVarObject().getVarInt());
 
     }
 
@@ -110,6 +80,20 @@ public class MainActivity extends AppCompatActivity {
             return dateToString(calendar.getTime());
         }
     }
+
+    private static QPCustomTranslation<Calendar, Date> mCustomTranslationDate = new QPCustomTranslation<Calendar, Date>() {
+        @Override
+        public Date onTranslation(Calendar c) {
+            return c.getTime();
+        }
+
+        @Override
+        public Calendar onTranslationInverse(Date d) {
+            Calendar c = Calendar.getInstance();
+            c.setTime(d);
+            return c;
+        }
+    };
 
     private static DecimalFormat mFormatter = new DecimalFormat("#00.###");
     private static String dateToString(Date date){

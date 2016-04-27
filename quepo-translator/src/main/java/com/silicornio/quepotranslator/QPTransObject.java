@@ -19,26 +19,11 @@ public class QPTransObject {
     /** Package to use with destiny objects for this element **/
     protected String valuesPackage;
 
+    /** Name of the object to get when the value is setted from a reference **/
     protected String referenceObject;
 
     protected QPTransObject(){
 
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        QPTransObject that = (QPTransObject) o;
-
-        return name != null ? name.equals(that.name) : that.name == null;
-
-    }
-
-    @Override
-    public int hashCode() {
-        return name != null ? name.hashCode() : 0;
     }
 
     /**
@@ -59,5 +44,23 @@ public class QPTransObject {
             count++;
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        QPTransObject that = (QPTransObject) o;
+
+        return name != null ? name.equals(that.name) : that.name == null;
+
+    }
+
+    @Override
+    public int hashCode() {
+        return name != null ? name.hashCode() : 0;
+    }
+
+
 
 }

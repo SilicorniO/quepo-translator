@@ -57,8 +57,22 @@ public class QPReflectionUtils {
      * @return Field of the object or null if not found
      */
     private static Field getField(Object object, String varName){
+
+        if(object==null){
+            return null;
+        }
+
+        return getField(object.getClass(), varName);
+    }
+
+    /**
+     * Get the field checking super objects
+     * @param objectClass Class where to search the variable
+     * @param varName String name of variable
+     * @return Field of the object or null if not found
+     */
+    private static Field getField(Class objectClass, String varName){
         Field field = null;
-        Class objectClass = object.getClass();
         do {
             try {
                 field = objectClass.getDeclaredField(varName);
@@ -132,10 +146,10 @@ public class QPReflectionUtils {
     }
 
     /**
-     * Return the package of a variable into an object
+     * Return the name of the class of a variable into an object
      * @param object Object to read
      * @param varName String name of the variable
-     * @return Object or null if not found
+     * @return String name of the class
      */
     public static String getClassValue(Object object, String varName){
 
@@ -145,6 +159,24 @@ public class QPReflectionUtils {
             return field.getType().getName();
         } catch (Exception e) {
             QPL.e("Object '" + object.getClass().getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
+        }
+        return null;
+    }
+
+    /**
+     * Return the class of a variable into an object
+     * @param klass Class to read
+     * @param varName String name of the variable
+     * @return Class  class
+     */
+    public static Class getClass(Class klass, String varName){
+
+        try {
+            //get the field checking superclass objects
+            Field field = getField(klass, varName);
+            return field.getType();
+        } catch (Exception e) {
+            QPL.e("Object '" + klass.getSimpleName() + "' hasn't got the field '" + varName + "' of the model: " + e.toString());
         }
         return null;
     }
