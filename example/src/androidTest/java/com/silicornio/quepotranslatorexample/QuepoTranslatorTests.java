@@ -50,6 +50,7 @@ public class QuepoTranslatorTests {
     QPTransManager mManager6;
 
     InputStream mIsObjectOrigin;
+    InputStream mIsObjectOriginArray;
 
     @Before
     public void setUp() {
@@ -64,6 +65,7 @@ public class QuepoTranslatorTests {
             mManager6 = new QPTransManager(QPUtils.readConfObjectFromAssets(mMockContext, "translation6.conf", QPTransConf.class));
 
             mIsObjectOrigin = mMockContext.getResources().getAssets().open("ObjectOrigin.json");
+            mIsObjectOriginArray = mMockContext.getResources().getAssets().open("ObjectOriginArray.json");
 
         }catch(IOException ioe){
             QPL.e("Error loading configuration: " + ioe.toString());
@@ -290,6 +292,33 @@ public class QuepoTranslatorTests {
 
         //compare object received with its identifier (title)
         assertEquals(oo.getVarObject().getVarInt(), 3);
+    }
+
+    @Test
+    public void test015ObjectNested(){
+
+        QPTransResponse response = mManager6.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginParent");
+
+        //compare object received with its identifier (title)
+        assertEquals(((ObjectOrigin)response.getObject()).getVarObject().getVarInt(), 2);
+    }
+
+    @Test
+    public void test016ObjectNested(){
+
+        QPTransResponse response = mManager6.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginReference");
+
+        //compare object received with its identifier (title)
+        assertEquals(((ObjectOrigin)response.getObject()).getVarObject().getVarInt(), 1);
+    }
+
+    @Test
+    public void test017ArrayRoot(){
+
+        QPTransResponse response = mManager6.translate(QPTransUtils.convertJSONToMap(mIsObjectOriginArray), "ObjectOriginArray");
+
+        //compare object received with its identifier (title)
+        assertEquals(((List<ObjectOrigin>)response.getObject("array")).get(2).getVarInt(), 3);
     }
 
 

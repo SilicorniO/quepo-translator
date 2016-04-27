@@ -18,6 +18,9 @@ import java.util.Map;
  */
 public class QPTransUtils {
 
+    /** Key used to read arrays when they are received at the root **/
+    public static final String KEY_ROOT_ARRAY = "array";
+
     /**
      * Translate the objects received with the translation object given
      * @param object Object with all objects to use
@@ -287,7 +290,7 @@ public class QPTransUtils {
                 //if the JSON is an array we convert it to a map
                 List<LinkedTreeMap<String, Object>> aLinkedMap = gson.fromJson(sMap, List.class);
                 linkedMap = new LinkedTreeMap<>();
-                linkedMap.put("array", aLinkedMap);
+                linkedMap.put(KEY_ROOT_ARRAY, aLinkedMap);
             }
             QPL.i("Map creation time: " + QPUtils.endCounter("mapCreation") + " ms");
 

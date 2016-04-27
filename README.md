@@ -20,7 +20,7 @@ In your `build.gradle` you should declare the jCenter repository into `repositor
 ```
 Include the library as dependency:
 ```gradle
-compile 'com.silicornio:quepo-translator:1.1.1'
+compile 'com.silicornio:quepo-translator:1.1.2'
 ```
 
 ### For Maven users
@@ -28,7 +28,7 @@ compile 'com.silicornio:quepo-translator:1.1.1'
 <dependency>
   <groupId>com.silicornio</groupId>
   <artifactId>quepo-translator</artifactId>
-  <version>1.1.1</version>
+  <version>1.1.2</version>
   <type>pom</type>
 </dependency>
 ```

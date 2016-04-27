@@ -14,6 +14,9 @@ import java.util.Map;
  */
 public class QPTransExecutor {
 
+    /** Key to use in the map to store the object class **/
+    private static final String MAP_KEY_OBJECT_CLASS = "quepotranslator_object_class";
+
     /** Configuration used for the execution **/
     private QPTransConf mConf;
 
@@ -162,7 +165,7 @@ public class QPTransExecutor {
     private Map<String, Object> translate(Map<String, Object> map, QPTransObject transObject){
 
         //generate the map where values will be translated first
-        Map<String, Object> instanceMap = translateToMap(map, transObject);
+        Map<String, Object> instanceMap = translateToMap(map, transObject, true);
 
         QPL.i("Map generated: " + instanceMap.toString());
 
@@ -315,9 +318,10 @@ public class QPTransExecutor {
      * Translate the map as the object with the name received
      * @param map Map<String, Object> to translate
      * @param transObject QPTransObject to use for translation
+     * @param rootMap boolean TRUE if it is the first map, used to add the package of the objects in this case
      * @return Map<String, Object> generated
      */
-    private Map<String, Object> translateToMap(Map<String, Object> map, QPTransObject transObject){
+    private Map<String, Object> translateToMap(Map<String, Object> map, QPTransObject transObject, boolean rootMap){
 
         //generate the map where values will be translated first
         Map<String, Object> instanceMap = new HashMap<>();
@@ -377,13 +381,25 @@ public class QPTransExecutor {
         }
 
         //check if this object has a reference to apply
-        if(transObject.referenceObject!=null){
-
-            //remove all maps that are not the reference
-            for(String key: new ArrayList<>(instanceMap.keySet())){
-                if(!transObject.referenceObject.equalsIgnoreCase(key)){
-                    instanceMap.remove(key);
+        if(!rootMap){
+            Object resultObject = null;
+            String nameClass = null;
+            if(transObject.referenceObject!=null) {
+                resultObject = instanceMap.get(transObject.referenceObject);
+                nameClass = transObject.referenceObject;
+            }else {
+                if(instanceMap.size()>0) {
+                    for(String key : instanceMap.keySet()){
+                        resultObject = instanceMap.get(key);
+                        nameClass = key;
+                        break;
+                    }
                 }
+            }
+            if(resultObject!=null && (resultObject instanceof Map)){
+                Map<String, Object> resultMap = (Map<String, Object>)resultObject;
+                resultMap.put(MAP_KEY_OBJECT_CLASS, nameClass);
+                return resultMap;
             }
         }
 
@@ -431,7 +447,7 @@ public class QPTransExecutor {
                     if(transObjectRef!=null) {
                         List<Map<String, Object>> listMaps = new ArrayList<>();
                         for (Map<String, Object> mapListValue : (List<Map<String, Object>>) listValue) {
-                            Map<String, Object> instanceListMap = translateToMap(mapListValue, transObjectRef);
+                            Map<String, Object> instanceListMap = translateToMap(mapListValue, transObjectRef, false);
                             listMaps.add(instanceListMap);
                         }
                         instanceMap.put(aDestiny[indexDestiny], listMaps);
@@ -445,7 +461,7 @@ public class QPTransExecutor {
                 if(transObjectRef!=null){
 
                     //translate the value with the object of the reference and save it as the value
-                    value = translateToMap((Map<String, Object>)value, transObjectRef);
+                    value = translateToMap((Map<String, Object>)value, transObjectRef, false);
                 }
             }
 
@@ -493,11 +509,11 @@ public class QPTransExecutor {
             if(nameClass.length()>0 && nameClass.charAt(0)=='.'){
 
                 if(entry.getValue() instanceof Map) {
-                    Map<String, Object> mapObjectsVirtual = generateObjects((Map<String, Object>)entry.getValue());
+                    Object item = generateObjectWithClassInContent((Map<String, Object>)entry.getValue());
 
                     //add the object in the map and the list
-                    if(mapObjectsVirtual.size()>0) {
-                        mapObjects.put(entry.getKey().substring(1), mapObjectsVirtual.entrySet().iterator().next().getValue());
+                    if(item!=null) {
+                        mapObjects.put(entry.getKey().substring(1), item);
                     }
 
                 }else if(entry.getValue() instanceof List){
@@ -506,10 +522,11 @@ public class QPTransExecutor {
                     List listVirtualObjects = new ArrayList<>();
                     for(Object obj : (List)entry.getValue()){
                         if(obj instanceof Map){
-                            //generate the map of the object in the list
-                            Map<String, Object> mapObjectItem = generateObjects((Map<String, Object>)obj);
-                            if(mapObjectItem.size()>0){
-                                listVirtualObjects.add(mapObjectItem.entrySet().iterator().next().getValue());
+                            Object item = generateObjectWithClassInContent((Map<String, Object>)obj);
+
+                            //add the object in the map and the list
+                            if(item!=null) {
+                                listVirtualObjects.add(item);
                             }
                         }
                     }
@@ -538,6 +555,25 @@ public class QPTransExecutor {
     }
 
     /**
+     * Generate an object with the name of the class in a variable of the map
+     * @param mapValue Map<String, Object> with values
+     * @return Object generated, it is one because this is used for lists and objects
+     */
+    private Object generateObjectWithClassInContent(Map<String, Object> mapValue){
+
+        //create a map with the name of the class before to translate it
+        Map<String, Object> mapObject = new HashMap<>();
+        String className = (String) mapValue.get(MAP_KEY_OBJECT_CLASS);
+        mapObject.put(className, mapValue);
+
+        //remove the value with the name of the class
+        mapValue.remove(MAP_KEY_OBJECT_CLASS);
+
+        //return the map generated
+        return generateObjects(mapObject).get(className);
+    }
+
+    /**
      * Generate the objects inside the instance of the object received using the map
      * @param mapObject Map<String, Object> that defines what values to set
      * @param instanceObject Object generated where to set values
@@ -558,12 +594,7 @@ public class QPTransExecutor {
                     }
                 }
                 if (object != null) {
-                    Object mapValue = ((Map)entry.getValue()).get(object.getClass().getName());
-                    if(mapValue!=null && (mapValue instanceof Map)){
-                        generateSubObjects((Map<String, Object>) mapValue, object);
-                    }else{
-                        QPL.i("Object of type '" + object.getClass().getName() + "' trying to be filled with another type, check configuration");
-                    }
+                    generateSubObjects((Map<String, Object>) entry.getValue(), object);
                 }
 
             }else if(entry.getValue() instanceof List){
@@ -573,10 +604,11 @@ public class QPTransExecutor {
 
                 for(Object obj : (List)entry.getValue()){
                     if(obj instanceof Map){
-                        Map<String, Object> mapObjs = generateObjects((Map<String, Object>)obj);
-                        for(String key : mapObjs.keySet()){
-                            list.add(mapObjs.get(key));
-                            break;
+
+                        //convert the item map to an item object
+                        Object item = generateObjectWithClassInContent((Map<String, Object>) obj);
+                        if(item!=null){
+                            list.add(item);
                         }
                     }else{
                         list.add(obj);

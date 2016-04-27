@@ -5,8 +5,12 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.silicornio.quepotranslator.QPCodeTranslation;
 import com.silicornio.quepotranslator.QPCustomTranslation;
+import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
+import com.silicornio.quepotranslator.QPTransResponse;
+import com.silicornio.quepotranslator.QPTransUtils;
 import com.silicornio.quepotranslator.general.QPL;
+import com.silicornio.quepotranslator.general.QPUtils;
 import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
 
 import java.io.IOException;
@@ -14,8 +18,7 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
@@ -31,27 +34,22 @@ public class MainActivity extends AppCompatActivity {
 
         QPL.showLogs = true;
 
-//        QPTransManager manager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation5.conf", QPTransConf.class));
-        QPTransManager manager = new QPTransManager(null);
+        QPTransManager mManager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation6.conf", QPTransConf.class));
+//        QPTransManager manager = new QPTransManager(null);
 //        manager.addCustomTranslation(mCustomTranslationDate);
-        InputStream isJson = null;
+        InputStream mIsObjectOrigin = null;
         try {
-            isJson = getResources().getAssets().open("ObjectOrigin.json");
+            mIsObjectOrigin = getResources().getAssets().open("ObjectOriginArray.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         //-----
 
-        Map<String, Object> mapOrigin = new HashMap<>();
-        mapOrigin.put("varInt", 3);
-        Map<String, Object> map = new HashMap<>();
-        map.put("varObject", mapOrigin);
-
-        ObjectOrigin oo = manager.translate(map, ObjectOrigin.class);
+        QPTransResponse response = mManager.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginArray");
 
         //compare object received with its identifier (title)
-        QPL.d("Value: " + oo.getVarObject().getVarInt());
+        QPL.d("Value: " + ((List<ObjectOrigin>)response.getObject("array")).get(2).getVarInt());
 
     }
 
