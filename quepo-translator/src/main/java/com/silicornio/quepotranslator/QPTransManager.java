@@ -105,7 +105,7 @@ public class QPTransManager {
     public QPTransResponse translate(Map<String, Object> map, String objectName){
 
         if(mConf ==null || map==null){
-            QPL.e("Configuration was not loaded");
+            QPL.e("Map or object name received is null, returning empty response");
             return new QPTransResponse();
         }
 
@@ -129,7 +129,7 @@ public class QPTransManager {
      * A configuration had to be loaded before: QPTransManager.loadConf()
      * @param map Map<String, Object> with values
      * @param klass Class of the object to convert
-     * @return QPTransResponse with the translated objects
+     * @return T with the translated objects
      */
     public <T>T translate(Map<String, Object> map, Class<T> klass){
 

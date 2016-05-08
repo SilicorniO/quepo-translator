@@ -452,7 +452,7 @@ public class QPTransExecutor {
                         }
                         instanceMap.put(aDestiny[indexDestiny], listMaps);
                     }else{
-                        QPL.e("For translating nested objects in lists it is necessary to set the object reference with attribute 'reference'");
+                        QPL.e("For translating nested objects in lists it is necessary to set the object reference with attribute 'reference', check '" + aDestiny[indexDestiny] + "'");
                     }
                     return;
                 }
@@ -473,7 +473,7 @@ public class QPTransExecutor {
         Object instanceSubMap = instanceMap.get(aDestiny[indexDestiny]);
         if(instanceSubMap!=null){
             if(!(instanceSubMap instanceof Map)) {
-                QPL.e("Some destinies are equals with different types, one is an object");
+                QPL.e("Some destinies are equals with different types, one is an object: " + instanceSubMap.getClass().getName());
                 return;
             }
         }else{
@@ -509,7 +509,7 @@ public class QPTransExecutor {
             if(nameClass.length()>0 && nameClass.charAt(0)=='.'){
 
                 if(entry.getValue() instanceof Map) {
-                    Object item = generateObjectWithClassInContent((Map<String, Object>)entry.getValue());
+                    Object item = generateObjectWithClassInContent((Map<String, Object>)entry.getValue(), entry.getKey());
 
                     //add the object in the map and the list
                     if(item!=null) {
@@ -522,7 +522,7 @@ public class QPTransExecutor {
                     List listVirtualObjects = new ArrayList<>();
                     for(Object obj : (List)entry.getValue()){
                         if(obj instanceof Map){
-                            Object item = generateObjectWithClassInContent((Map<String, Object>)obj);
+                            Object item = generateObjectWithClassInContent((Map<String, Object>)obj, entry.getKey());
 
                             //add the object in the map and the list
                             if(item!=null) {
@@ -559,7 +559,13 @@ public class QPTransExecutor {
      * @param mapValue Map<String, Object> with values
      * @return Object generated, it is one because this is used for lists and objects
      */
-    private Object generateObjectWithClassInContent(Map<String, Object> mapValue){
+    private Object generateObjectWithClassInContent(Map<String, Object> mapValue, String key){
+
+        //check map is not null and has data
+        if(mapValue==null || mapValue.size()==0){
+            QPL.e("Something wrong in " + key + " value, check your configuration");
+            return null;
+        }
 
         //create a map with the name of the class before to translate it
         Map<String, Object> mapObject = new HashMap<>();
@@ -606,7 +612,7 @@ public class QPTransExecutor {
                     if(obj instanceof Map){
 
                         //convert the item map to an item object
-                        Object item = generateObjectWithClassInContent((Map<String, Object>) obj);
+                        Object item = generateObjectWithClassInContent((Map<String, Object>) obj, entry.getKey());
                         if(item!=null){
                             list.add(item);
                         }
