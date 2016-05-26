@@ -321,6 +321,27 @@ public class QuepoTranslatorTests {
         assertEquals(((List<ObjectOrigin>)response.getObject("array")).get(2).getVarInt(), 3);
     }
 
+    @Test
+    public void test018IntegerNull(){
+
+        QPTransResponse response = mManager6.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginNull");
+
+        //compare object received with its identifier (title)
+        assertEquals(response.getObject(ObjectOrigin.class).getVarInteger(), null);
+    }
+
+    @Test
+    public void test019IntegerNullInverse(){
+
+        ObjectOrigin oo = new ObjectOrigin();
+        oo.setVarInteger(3);
+
+        Map<String, Object> mapObjects = QPTransUtils.convertObjectToMapInversion(oo, null);
+        Map<String, Object> mapInverse = mManager6.translateInverse(mapObjects, "ObjectOriginNullInverse");
+
+        //compare object received with its identifier (title)
+        assertEquals(mapInverse.get("varInteger"), 3);
+    }
 
 
     //----- END TESTS ----

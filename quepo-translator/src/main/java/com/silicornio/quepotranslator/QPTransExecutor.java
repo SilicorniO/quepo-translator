@@ -66,6 +66,14 @@ public class QPTransExecutor {
         this.checkTranslationsFirst = checkTranslationsFirst;
     }
 
+    /**
+     * Show null elements or not in inverse translation
+     * @param translateNullElements boolean TRUE to translate null elements into the map, FALSE to not show it
+     */
+    public void setTranslateNullElements(boolean translateNullElements) {
+        mTranslateNullElements = translateNullElements;
+    }
+
     //----- INITIAL TRANSLATION -----
 
     /**
@@ -118,16 +126,12 @@ public class QPTransExecutor {
      * Translate a map with values of objects into a map with inverse values
      * @param map Map<String, Object> with the name of the objects and inside their values
      * @param objectName String name of the object to use
-     * @param translateNullElements boolean TRUE to translate null elements into the map, FALSE to not show it
      * @return Map<String, Object> with inverse translation
      */
-    protected Map<String, Object> translateInverse(Map<String, Object> map, String objectName, QPTransConf conf, boolean translateNullElements){
+    protected Map<String, Object> translateInverse(Map<String, Object> map, String objectName, QPTransConf conf){
 
         //save the conf file
         mConf = conf;
-
-        //save flags
-        mTranslateNullElements = translateNullElements;
 
         //convert the objectName to a object
         QPTransObject transObject = null;
@@ -164,13 +168,20 @@ public class QPTransExecutor {
      */
     private Map<String, Object> translate(Map<String, Object> map, QPTransObject transObject){
 
-        //generate the map where values will be translated first
-        Map<String, Object> instanceMap = translateToMap(map, transObject, true);
+        try {
+            //generate the map where values will be translated first
+            Map<String, Object> instanceMap = translateToMap(map, transObject, true);
 
-        QPL.i("Map generated: " + instanceMap.toString());
+            QPL.i("Map generated: " + instanceMap.toString());
 
-        //return the list of generated objects
-        return generateObjects(instanceMap);
+            //return the list of generated objects
+            return generateObjects(instanceMap);
+        }catch (Exception e){
+            QPL.e("UNEXPECTED EXCEPTION: " + e.toString());
+        }
+
+        //return empty map
+        return new HashMap<>();
     }
 
 
@@ -376,7 +387,7 @@ public class QPTransExecutor {
                     QPL.i("Value with name '" + transValue.name + "' in the object '" + transObject.name + "' was not found in the map received");
                 }
             }else{
-                QPL.i("Ignoring value with name '\" + transValue.name + \"' in the object '\" + transObject.name + \"' because the name or the destiny were not setted");
+                QPL.i("Ignoring value with name '" + transValue.name + "' in the object '" + transObject.name + "' because the name or the destiny were not setted");
             }
         }
 

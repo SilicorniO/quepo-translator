@@ -3,14 +3,16 @@ package com.silicornio.quepotranslatorexample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.silicornio.quepotranslator.QPCodeTranslation;
 import com.silicornio.quepotranslator.QPCustomTranslation;
 import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
-import com.silicornio.quepotranslator.QPTransResponse;
 import com.silicornio.quepotranslator.QPTransUtils;
 import com.silicornio.quepotranslator.general.QPL;
 import com.silicornio.quepotranslator.general.QPUtils;
+import com.silicornio.quepotranslator.parser.QPJSONParser;
 import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
 
 import java.io.IOException;
@@ -18,7 +20,8 @@ import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 public class MainActivity extends AppCompatActivity {
@@ -35,22 +38,41 @@ public class MainActivity extends AppCompatActivity {
         QPL.showLogs = true;
 
         QPTransManager mManager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation6.conf", QPTransConf.class));
-//        QPTransManager manager = new QPTransManager(null);
-//        manager.addCustomTranslation(mCustomTranslationDate);
         InputStream mIsObjectOrigin = null;
         try {
-            mIsObjectOrigin = getResources().getAssets().open("ObjectOriginArray.json");
+            mIsObjectOrigin = getResources().getAssets().open("objectOriginNull.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         //-----
 
-        QPTransResponse response = mManager.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginArray");
+        ObjectOrigin oo = new ObjectOrigin();
+        oo.setVarInteger(3);
+        oo.setVarBoolean(null);
 
-        //compare object received with its identifier (title)
-        QPL.d("Value: " + ((List<ObjectOrigin>)response.getObject("array")).get(2).getVarInt());
+        Map<String, Object> mapObjects = QPTransUtils.convertObjectToMapInversion(oo, null);
+        mManager.setTranslateNullElements(true);
+        Map<String, Object> mapInverse = mManager.translateInverse(mapObjects, "ObjectOriginNullInverse");
 
+        Gson gson = new GsonBuilder().serializeNulls().create();
+        QPL.d("Map1: " + gson.toJson(mapInverse));
+        QPL.d("Map2: " + QPJSONParser.toString(mapInverse));
+
+    }
+
+    private void fillMap(Map<String, Object> map, int level){
+
+        if(level==10){
+            map.put("test", "testing");
+        }else {
+
+            for (int i = 0; i < 2; i++) {
+                Map<String, Object> mapNew = new HashMap<>();
+                fillMap(mapNew, level+1);
+                map.put("map" + i, mapNew);
+            }
+        }
     }
 
     private static class DateQPCodeInverseTranslation extends QPCodeTranslation<Date>{

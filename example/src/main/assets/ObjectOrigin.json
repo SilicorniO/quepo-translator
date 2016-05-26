@@ -1,4 +1,6 @@
 {
+	"varBoolean": true,
+	"varInteger": null,
 	"varInt": 1,
 	"varDouble": 2.2,
 	"varString": "text",

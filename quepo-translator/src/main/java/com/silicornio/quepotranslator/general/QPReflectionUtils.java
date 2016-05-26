@@ -105,7 +105,8 @@ public class QPReflectionUtils {
                     //get the type
                     Class type = field.getType();
 
-                    if (type.isPrimitive() || (type == String.class)) {
+                    if (type.isPrimitive() || (type == Integer.class) || (type == Float.class) || (type == Double.class) ||
+                            (type == Boolean.class) || (type == String.class)) {
                         varNames[0].add(field.getName());
                     } else if (type.isArray()) {
                         varNames[1].add(field.getName());
@@ -216,11 +217,11 @@ public class QPReflectionUtils {
                 }
             }
 
-            if (fieldType == Integer.TYPE) {
+            if (fieldType == Integer.TYPE || fieldType == Integer.class) {
                 field.set(object, getInteger(value));
-            } else if (fieldType == Float.TYPE) {
+            } else if (fieldType == Float.TYPE || fieldType == Float.class) {
                 field.set(object, getFloat(value));
-            } else if (fieldType == Double.TYPE) {
+            } else if (fieldType == Double.TYPE || fieldType == Double.class) {
                 field.set(object, getDouble(value));
             } else if (fieldType == String.class) {
                 field.set(object, value.toString());

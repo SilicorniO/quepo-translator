@@ -54,6 +54,14 @@ public class QPTransManager {
     }
 
     /**
+     * Show null elements or not in inverse translation
+     * @param translateNullElements boolean TRUE to translate null elements into the map, FALSE to not show it
+     */
+    public void setTranslateNullElements(boolean translateNullElements) {
+        mExecutor.setTranslateNullElements(translateNullElements);
+    }
+
+    /**
      * Add the code translation to use
      * @param codeTranslation QPCodeTranslation to add
      */
@@ -170,7 +178,7 @@ public class QPTransManager {
      */
     public Map<String, Object> translateInverse(Map<String, Object> map, String objectName){
 
-        Map<String, Object> mapInverse = mExecutor.translateInverse(map, objectName, mConf, false);
+        Map<String, Object> mapInverse = mExecutor.translateInverse(map, objectName, mConf);
 
         //do code translations before translate the map with configuration
         if(mapInverse!=null) {

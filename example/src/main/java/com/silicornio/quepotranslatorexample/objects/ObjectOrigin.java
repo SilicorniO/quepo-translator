@@ -10,7 +10,13 @@ import java.util.List;
  */
 public class ObjectOrigin {
 
+    private boolean varBool;
+
+    private Boolean varBoolean;
+
     private int varInt;
+
+    private Integer varInteger;
 
     private float varFloat;
 
@@ -32,12 +38,36 @@ public class ObjectOrigin {
 
     private Date varDate;
 
+    public boolean isVarBool() {
+        return varBool;
+    }
+
+    public void setVarBool(boolean varBool) {
+        this.varBool = varBool;
+    }
+
+    public Boolean getVarBoolean() {
+        return varBoolean;
+    }
+
+    public void setVarBoolean(Boolean varBoolean) {
+        this.varBoolean = varBoolean;
+    }
+
     public int getVarInt() {
         return varInt;
     }
 
     public void setVarInt(int varInt) {
         this.varInt = varInt;
+    }
+
+    public Integer getVarInteger() {
+        return varInteger;
+    }
+
+    public void setVarInteger(Integer varInteger) {
+        this.varInteger = varInteger;
     }
 
     public float getVarFloat() {

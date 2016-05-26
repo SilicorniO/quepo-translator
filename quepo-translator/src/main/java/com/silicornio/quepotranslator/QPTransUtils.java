@@ -1,6 +1,7 @@
 package com.silicornio.quepotranslator;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.internal.LinkedTreeMap;
 import com.silicornio.quepotranslator.general.QPL;
@@ -309,7 +310,21 @@ public class QPTransUtils {
      * @return String JSON
      */
     public static String convertMapToJSON(Map<String, Object> map){
-        Gson gson = new Gson();
+        return convertMapToJSON(map, false);
+    }
+
+    /**
+     * Convert map to JSON
+     * @param map Map<String, Object> to convert to JSON
+     * @param serializeNulls boolean TRUE to serialize the values as null
+     * @return String JSON
+     */
+    public static String convertMapToJSON(Map<String, Object> map, boolean serializeNulls){
+        GsonBuilder builder = new GsonBuilder();
+        if(serializeNulls){
+            builder.serializeNulls();
+        }
+        Gson gson = builder.create();
         return gson.toJson(map);
     }
 }
