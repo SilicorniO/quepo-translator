@@ -4,23 +4,23 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.internal.LinkedTreeMap;
 import com.silicornio.quepotranslator.QPCodeTranslation;
 import com.silicornio.quepotranslator.QPCustomTranslation;
 import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
-import com.silicornio.quepotranslator.QPTransUtils;
 import com.silicornio.quepotranslator.general.QPL;
 import com.silicornio.quepotranslator.general.QPUtils;
-import com.silicornio.quepotranslator.parser.QPJSONParser;
 import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -48,16 +48,24 @@ public class MainActivity extends AppCompatActivity {
         //-----
 
         ObjectOrigin oo = new ObjectOrigin();
-        oo.setVarInteger(3);
-        oo.setVarBoolean(null);
+        oo.setVarInt(1);
 
-        Map<String, Object> mapObjects = QPTransUtils.convertObjectToMapInversion(oo, null);
-        mManager.setTranslateNullElements(true);
-        Map<String, Object> mapInverse = mManager.translateInverse(mapObjects, "ObjectOriginNullInverse");
+        ObjectOrigin oo2 = new ObjectOrigin();
+        oo2.setVarInt(2);
+        oo.setVarObject(oo2);
 
-        Gson gson = new GsonBuilder().serializeNulls().create();
-        QPL.d("Map1: " + gson.toJson(mapInverse));
-        QPL.d("Map2: " + QPJSONParser.toString(mapInverse));
+        List<ObjectOrigin> listO = new ArrayList<>();
+        listO.add(oo2);
+        oo.setVarListObjects(listO);
+
+        Gson gson = new Gson();
+        Map<String, Object> map = gson.fromJson(gson.toJson(oo), LinkedTreeMap.class);
+
+        QPTransManager manager = new QPTransManager(null);
+        manager.addCustomTranslation(mCustomTranslationDate);
+        ObjectOrigin ooTranslated = manager.translate(map, ObjectOrigin.class);
+
+        QPL.d("VALUE: " + ooTranslated.getVarListObjects().get(0).getVarInt());
 
     }
 

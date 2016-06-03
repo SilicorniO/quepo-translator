@@ -160,9 +160,12 @@ public class QPTransManager {
         doCodeTranslations(map, mCodeTranslations);
 
         Map<String, Object> objects = mExecutor.translate(map, klass.getSimpleName(), mConf);
-        for(String key : objects.keySet()){
-            if(objects.get(key).getClass().equals(klass)) {
-                return (T) objects.get(key);
+
+        if(objects!=null) {
+            for (String key : objects.keySet()) {
+                if (objects.get(key).getClass().equals(klass)) {
+                    return (T) objects.get(key);
+                }
             }
         }
         return null;

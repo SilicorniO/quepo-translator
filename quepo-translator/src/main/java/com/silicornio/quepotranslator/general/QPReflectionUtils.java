@@ -7,6 +7,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -81,6 +82,21 @@ public class QPReflectionUtils {
             }
         }while(field==null && objectClass!=null);
         return field;
+    }
+
+    /**
+     * Get the generic class of a field
+     * @param objectClass Class where to search the generic class
+     * @param varName String name of variable
+     * @return Class or null
+     */
+    public static Class getGenericClass(Class objectClass, String varName){
+        try {
+            return (Class) ((ParameterizedType) getField(objectClass, varName).getGenericType()).getActualTypeArguments()[0];
+        }catch(Exception e){
+            QPL.e("Error getting generic class of field '" + objectClass.getName() + "." + varName  + "': " + e.toString());
+        }
+        return null;
     }
 
     /**

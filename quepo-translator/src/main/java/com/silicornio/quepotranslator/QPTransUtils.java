@@ -58,10 +58,34 @@ public class QPTransUtils {
      * @return Map<String, Object> converted
      */
     public static Map<String, Object> convertObjectToMap(Object object, Class[] avoidClasses){
+        return convertObjectToMap(object, avoidClasses, new ArrayList());
+    }
+
+    /**
+     * Convert the object received in a Map
+     * @param object Object to convert
+     * @param avoidClasses Class[] array of classes to not translate
+     * @param avoidObjects List<Object> list with objects converted to avoid infinite loops
+     * @return Map<String, Object> converted
+     */
+    private static Map<String, Object> convertObjectToMap(Object object, Class[] avoidClasses, List avoidObjects){
         Map<String, Object> map = new HashMap<>();
 
         //set the object values into the map
-        if(object!=null) {
+        if(object!=null){
+
+            //check if object was already converted
+            for(Object obj : avoidObjects){
+                if(obj==object) {
+                    QPL.i("Infinite loop blocked for object: " + object.getClass().getName());
+                    return map;
+                }
+            }
+
+            //add the object to the list of converted objects
+            avoidObjects.add(object);
+
+            //get the name of the variables
             List<String>[] varNames = QPReflectionUtils.getVariableNames(object.getClass());
 
             //primitives
@@ -100,7 +124,7 @@ public class QPTransUtils {
                                 if(isObjectToAvoid(obj, avoidClasses)){
                                     list.add(obj);
                                 }else{
-                                    list.add(convertObjectToMap(obj, avoidClasses));
+                                    list.add(convertObjectToMap(obj, avoidClasses, avoidObjects));
                                 }
                             }
                         }catch(ClassCastException cce){
@@ -122,12 +146,12 @@ public class QPTransUtils {
                                 if (objectIsPrimitive(obj)) {
                                     list.add(obj);
                                 } else {
-                                    list.add(convertObjectToMap(obj, avoidClasses));
+                                    list.add(convertObjectToMap(obj, avoidClasses, avoidObjects));
                                 }
                             }
                             map.put(varName, list);
                         } else {
-                            map.put(varName, convertObjectToMap(value, avoidClasses));
+                            map.put(varName, convertObjectToMap(value, avoidClasses, avoidObjects));
                         }
                     }else{
                         map.put(varName, value);
@@ -243,6 +267,19 @@ public class QPTransUtils {
                     String refName = objectName + "_" + entry.getKey();
                     generateObjects(refName, refKlass, (Map<String, Object>)entry.getValue(), objects);
                     object.values[count].reference = refName;
+                }
+            }else if(entry.getValue() instanceof List){
+
+                List list = (List) entry.getValue();
+                if(list.size()>0 && (list.get(0) instanceof Map)){
+                    Class refKlass = QPReflectionUtils.getGenericClass(klass, entry.getKey());
+                    if(refKlass!=null) {
+                        String refName = objectName + "_" + entry.getKey();
+                        generateObjects(refName, refKlass, (Map<String, Object>) list.get(0), objects);
+                        object.values[count].reference = refName;
+                    }else{
+                        QPL.w("There is a list without type that won't be translated: '" + entry.getKey() + "'");
+                    }
                 }
             }
 

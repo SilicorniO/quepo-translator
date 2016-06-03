@@ -581,13 +581,18 @@ public class QPTransExecutor {
         //create a map with the name of the class before to translate it
         Map<String, Object> mapObject = new HashMap<>();
         String className = (String) mapValue.get(MAP_KEY_OBJECT_CLASS);
-        mapObject.put(className, mapValue);
+        if(className!=null){
+            mapObject.put(className, mapValue);
 
-        //remove the value with the name of the class
-        mapValue.remove(MAP_KEY_OBJECT_CLASS);
+            //remove the value with the name of the class
+            mapValue.remove(MAP_KEY_OBJECT_CLASS);
 
-        //return the map generated
-        return generateObjects(mapObject).get(className);
+            //return the map generated
+            return generateObjects(mapObject).get(className);
+        }else{
+            QPL.e(MAP_KEY_OBJECT_CLASS + " not defined for the key '" + key + "'");
+            return null;
+        }
     }
 
     /**
@@ -635,7 +640,7 @@ public class QPTransExecutor {
                 //set the value into the instanceObject
                 QPReflectionUtils.setValue(instanceObject, entry.getKey(), list, mCustomTranslations, checkTranslationsFirst);
 
-            }else{
+            }else if(!MAP_KEY_OBJECT_CLASS.equals(entry.getKey())){
 
                 //set the value into the instanceObject
                 QPReflectionUtils.setValue(instanceObject, entry.getKey(), entry.getValue(), mCustomTranslations, checkTranslationsFirst);

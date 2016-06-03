@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by SilicorniO
@@ -37,6 +38,8 @@ public class ObjectOrigin {
     private Calendar varCalendar;
 
     private Date varDate;
+
+    private Map<String, Object> varMap;
 
     public boolean isVarBool() {
         return varBool;
@@ -148,6 +151,14 @@ public class ObjectOrigin {
 
     public void setVarDate(Date varDate) {
         this.varDate = varDate;
+    }
+
+    public Map<String, Object> getVarMap() {
+        return varMap;
+    }
+
+    public void setVarMap(Map<String, Object> varMap) {
+        this.varMap = varMap;
     }
 
     @Override
