@@ -20,7 +20,7 @@ In your `build.gradle` you should declare the jCenter repository into `repositor
 ```
 Include the library as dependency:
 ```gradle
-compile 'com.silicornio:quepo-translator:1.2.1'
+compile 'com.silicornio:quepo-translator:1.3.0'
 ```
 
 ### For Maven users
@@ -28,7 +28,7 @@ compile 'com.silicornio:quepo-translator:1.2.1'
 <dependency>
   <groupId>com.silicornio</groupId>
   <artifactId>quepo-translator</artifactId>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
   <type>pom</type>
 </dependency>
 ```
@@ -71,7 +71,17 @@ compile 'com.silicornio:quepo-translator:1.2.1'
     					"destiny": "ObjectDestiny.varString"
     				}
     			]
-    		}
+    		},
+			{
+    			"name": "ObjectOriginComplete",
+				"objectsInclude": ["ObjectOrigin"],
+    			"values": [
+    				{
+    				    "name": "intValue",
+    				    "destiny": "ObjectOrigin.varInteger"
+    				}
+    			]
+    		},
     	]
     }
     ```
@@ -79,6 +89,7 @@ compile 'com.silicornio:quepo-translator:1.2.1'
   * objectsPackage - Default package where to create the instances of the objects.
   * object.name - Name of the object. This is the name we use when we want to convert a map or another object. We have to indicate the object to use for the conversion.
   * object.valuesPackage - Package to use as default for the destinies of the object
+  * object.objectsInclude - Array of name of objects that extends actual. When this object is used, all the values of the objects of the array are copied.
   * values.name - Name of the variable of the origin object.
   * values.destiny - [PACKAGE]:[OBJECT].[VARIABLE] where we will save the value (destiny variable of the destiny object). If we don't want to store it in any object we can create a virtual object writting ":"[OBJECT], as if the object would have an empty package.
   * values.reference - Used to link another Object when we have a list of Objects and we want to specify the type of Object to convert. For generic types is not needed.
@@ -186,6 +197,9 @@ compile 'com.silicornio:quepo-translator:1.2.1'
      }
    ```
 
+   From V1.3.0: This can be used in inverse translation if the objects are converted to JSON.
+   
+   
 ## Logs
 
 Quepo-Translator has a lot of logs, showing all the process. You can enable it but remember to disable it in production releases.

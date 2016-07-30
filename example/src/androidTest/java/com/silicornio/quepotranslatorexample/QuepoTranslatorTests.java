@@ -343,6 +343,35 @@ public class QuepoTranslatorTests {
         assertEquals(mapInverse.get("varInteger"), 3);
     }
 
+    @Test
+    public void test020ArrayReturnInverse(){
+
+        ObjectOrigin oo1 = new ObjectOrigin();
+        oo1.setVarInt(3);
+
+        ObjectOrigin oo2 = new ObjectOrigin();
+        oo2.setVarInt(2);
+
+        List<ObjectOrigin> oos = new ArrayList<>();
+        oos.add(oo1);
+        oos.add(oo2);
+
+        Map<String, Object> mapObjects = QPTransUtils.convertObjectToMapInversion(oos, null);
+        Map<String, Object> mapInverse = mManager6.translateInverse(mapObjects, "ObjectOriginArray");
+
+        //compare object received with its identifier (title)
+        assertEquals(((Map<String,Object>)((List<ObjectOrigin>)mapInverse.get("array")).get(1)).get("varInt"),2);
+    }
+
+    @Test
+    public void test021IncludeValuesIntoObject(){
+
+        QPTransResponse response = mManager6.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginInclude");
+
+        //compare object received with its identifier (title)
+        assertTrue(response.getObject(ObjectOrigin.class).getVarInt() + response.getObject(ObjectOrigin.class).getVarDouble()==3.2);
+    }
+
 
     //----- END TESTS ----
 }

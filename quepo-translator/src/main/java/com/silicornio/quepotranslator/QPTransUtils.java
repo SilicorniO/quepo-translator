@@ -43,8 +43,22 @@ public class QPTransUtils {
         //generate a map of the objects received
         Map<String, Object> mapObjects = new HashMap<>();
         for(Object obj : objects){
-            Map<String, Object> mapObj = QPTransUtils.convertObjectToMap(obj, avoidClasses);
-            mapObjects.put(obj.getClass().getName(), mapObj);
+
+            //check if it is an array to add it as an array
+            if ((obj instanceof List)) {
+
+                //generate the list of maps
+                List list = new ArrayList();
+                for (Object o : (List) obj) {
+                    list.add(QPTransUtils.convertObjectToMap(o, avoidClasses));
+                }
+
+                mapObjects.put(KEY_ROOT_ARRAY, list);
+
+            }else{
+                Map<String, Object> mapObj = QPTransUtils.convertObjectToMap(obj, avoidClasses);
+                mapObjects.put(obj.getClass().getName(), mapObj);
+            }
         }
 
         //translate the map
@@ -362,6 +376,12 @@ public class QPTransUtils {
             builder.serializeNulls();
         }
         Gson gson = builder.create();
-        return gson.toJson(map);
+
+        //check if the map contains an array that should be returned as array
+        if(map.containsKey(KEY_ROOT_ARRAY)){
+            return gson.toJson(map.get(KEY_ROOT_ARRAY));
+        }else {
+            return gson.toJson(map);
+        }
     }
 }

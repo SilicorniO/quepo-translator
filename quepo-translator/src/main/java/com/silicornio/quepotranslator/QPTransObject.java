@@ -16,6 +16,9 @@ public class QPTransObject {
     /** Name of the object where to store this one having got the same variables **/
     protected String reference;
 
+    /** Array of name of object to include in this one **/
+    protected String[] objectsInclude;
+
     /** Package to use with destiny objects for this element **/
     protected String valuesPackage;
 
@@ -60,7 +63,5 @@ public class QPTransObject {
     public int hashCode() {
         return name != null ? name.hashCode() : 0;
     }
-
-
 
 }

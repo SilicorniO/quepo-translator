@@ -3,12 +3,12 @@ package com.silicornio.quepotranslatorexample;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.google.gson.Gson;
-import com.google.gson.internal.LinkedTreeMap;
 import com.silicornio.quepotranslator.QPCodeTranslation;
 import com.silicornio.quepotranslator.QPCustomTranslation;
 import com.silicornio.quepotranslator.QPTransConf;
 import com.silicornio.quepotranslator.QPTransManager;
+import com.silicornio.quepotranslator.QPTransResponse;
+import com.silicornio.quepotranslator.QPTransUtils;
 import com.silicornio.quepotranslator.general.QPL;
 import com.silicornio.quepotranslator.general.QPUtils;
 import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
@@ -16,11 +16,9 @@ import com.silicornio.quepotranslatorexample.objects.ObjectOrigin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -40,32 +38,16 @@ public class MainActivity extends AppCompatActivity {
         QPTransManager mManager = new QPTransManager(QPUtils.readConfObjectFromAssets(this, "translation6.conf", QPTransConf.class));
         InputStream mIsObjectOrigin = null;
         try {
-            mIsObjectOrigin = getResources().getAssets().open("objectOriginNull.json");
+            mIsObjectOrigin = getResources().getAssets().open("ObjectOrigin.json");
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         //-----
 
-        ObjectOrigin oo = new ObjectOrigin();
-        oo.setVarInt(1);
+        QPTransResponse response = mManager.translate(QPTransUtils.convertJSONToMap(mIsObjectOrigin), "ObjectOriginInclude");
 
-        ObjectOrigin oo2 = new ObjectOrigin();
-        oo2.setVarInt(2);
-        oo.setVarObject(oo2);
-
-        List<ObjectOrigin> listO = new ArrayList<>();
-        listO.add(oo2);
-        oo.setVarListObjects(listO);
-
-        Gson gson = new Gson();
-        Map<String, Object> map = gson.fromJson(gson.toJson(oo), LinkedTreeMap.class);
-
-        QPTransManager manager = new QPTransManager(null);
-        manager.addCustomTranslation(mCustomTranslationDate);
-        ObjectOrigin ooTranslated = manager.translate(map, ObjectOrigin.class);
-
-        QPL.d("VALUE: " + ooTranslated.getVarListObjects().get(0).getVarInt());
+        QPL.d("VALUE: " + response.getObject(ObjectOrigin.class).getVarInt() + ", " + response.getObject(ObjectOrigin.class).getVarDouble());
 
     }
 
